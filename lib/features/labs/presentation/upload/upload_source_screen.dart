@@ -1,32 +1,31 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import 'camera_capture_screen.dart';
+import 'lab_page.dart';
+import 'lab_photo_picker.dart';
 import 'redaction_screen.dart';
 
 /// Choose how to bring in the lab report: camera (custom capture screen with
-/// a framing guide), gallery, or a PDF file. Every path leads to the
-/// redaction screen before anything is uploaded.
+/// a framing guide), gallery (several photos at once), or a PDF file. Every
+/// path leads to the redaction screen before anything is uploaded; more
+/// photo pages can be added there.
 class UploadSourceScreen extends StatelessWidget {
   const UploadSourceScreen({super.key});
 
   Future<void> _fromCamera(BuildContext context) async {
-    final file = await Navigator.of(context).push<File>(
-      MaterialPageRoute(builder: (_) => const CameraCaptureScreen()),
-    );
-    if (file != null && context.mounted) {
-      _openRedaction(context, file, page: 0);
+    final path = await captureLabPhoto(context);
+    if (path != null && context.mounted) {
+      _openRedaction(context, RedactionScreen.photos(photoPaths: [path]));
     }
   }
 
   Future<void> _fromGallery(BuildContext context) async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
-    if (picked != null && context.mounted) {
-      _openRedaction(context, File(picked.path), page: 0);
+    final paths = await pickLabPhotosFromGallery(limit: maxLabPages);
+    if (paths.isNotEmpty && context.mounted) {
+      _openRedaction(context, RedactionScreen.photos(photoPaths: paths));
     }
   }
 
@@ -34,14 +33,12 @@ class UploadSourceScreen extends StatelessWidget {
     final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     final path = result?.files.single.path;
     if (path != null && context.mounted) {
-      _openRedaction(context, File(path), page: 0, isPdf: true);
+      _openRedaction(context, RedactionScreen.pdf(file: File(path)));
     }
   }
 
-  void _openRedaction(BuildContext context, File file, {required int page, bool isPdf = false}) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => RedactionScreen(file: file, isPdf: isPdf)),
-    );
+  void _openRedaction(BuildContext context, RedactionScreen screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
   @override
@@ -58,14 +55,14 @@ class UploadSourceScreen extends StatelessWidget {
             _SourceOption(
               icon: Icons.camera_alt_rounded,
               title: 'Сфотографировать',
-              subtitle: 'Быстро и удобно для бумажного бланка',
+              subtitle: 'Если страниц несколько — добавите их следующим шагом',
               onTap: () => _fromCamera(context),
             ),
             const SizedBox(height: AppSpacing.md),
             _SourceOption(
               icon: Icons.photo_library_rounded,
               title: 'Из галереи',
-              subtitle: 'Если фото уже сделано',
+              subtitle: 'Можно выбрать сразу несколько фото — до $maxLabPages',
               onTap: () => _fromGallery(context),
             ),
             const SizedBox(height: AppSpacing.md),

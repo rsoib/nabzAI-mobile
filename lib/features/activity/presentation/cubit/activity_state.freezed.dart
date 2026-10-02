@@ -55,11 +55,12 @@ extension ActivityStatePatterns on ActivityState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ActivityNotConnected value)?  notConnected,TResult Function( ActivityLoading value)?  loading,TResult Function( ActivityConnected value)?  connected,TResult Function( ActivityError value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ActivityNotConnected value)?  notConnected,TResult Function( ActivityHealthConnectMissing value)?  healthConnectMissing,TResult Function( ActivityLoading value)?  loading,TResult Function( ActivityConnected value)?  connected,TResult Function( ActivityError value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case ActivityNotConnected() when notConnected != null:
-return notConnected(_that);case ActivityLoading() when loading != null:
+return notConnected(_that);case ActivityHealthConnectMissing() when healthConnectMissing != null:
+return healthConnectMissing(_that);case ActivityLoading() when loading != null:
 return loading(_that);case ActivityConnected() when connected != null:
 return connected(_that);case ActivityError() when error != null:
 return error(_that);case _:
@@ -80,11 +81,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ActivityNotConnected value)  notConnected,required TResult Function( ActivityLoading value)  loading,required TResult Function( ActivityConnected value)  connected,required TResult Function( ActivityError value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ActivityNotConnected value)  notConnected,required TResult Function( ActivityHealthConnectMissing value)  healthConnectMissing,required TResult Function( ActivityLoading value)  loading,required TResult Function( ActivityConnected value)  connected,required TResult Function( ActivityError value)  error,}){
 final _that = this;
 switch (_that) {
 case ActivityNotConnected():
-return notConnected(_that);case ActivityLoading():
+return notConnected(_that);case ActivityHealthConnectMissing():
+return healthConnectMissing(_that);case ActivityLoading():
 return loading(_that);case ActivityConnected():
 return connected(_that);case ActivityError():
 return error(_that);}
@@ -101,11 +103,12 @@ return error(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ActivityNotConnected value)?  notConnected,TResult? Function( ActivityLoading value)?  loading,TResult? Function( ActivityConnected value)?  connected,TResult? Function( ActivityError value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ActivityNotConnected value)?  notConnected,TResult? Function( ActivityHealthConnectMissing value)?  healthConnectMissing,TResult? Function( ActivityLoading value)?  loading,TResult? Function( ActivityConnected value)?  connected,TResult? Function( ActivityError value)?  error,}){
 final _that = this;
 switch (_that) {
 case ActivityNotConnected() when notConnected != null:
-return notConnected(_that);case ActivityLoading() when loading != null:
+return notConnected(_that);case ActivityHealthConnectMissing() when healthConnectMissing != null:
+return healthConnectMissing(_that);case ActivityLoading() when loading != null:
 return loading(_that);case ActivityConnected() when connected != null:
 return connected(_that);case ActivityError() when error != null:
 return error(_that);case _:
@@ -125,10 +128,11 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  notConnected,TResult Function()?  loading,TResult Function( List<DailyHealthMetric> metrics)?  connected,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  notConnected,TResult Function()?  healthConnectMissing,TResult Function()?  loading,TResult Function( List<DailyHealthMetric> metrics)?  connected,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ActivityNotConnected() when notConnected != null:
-return notConnected();case ActivityLoading() when loading != null:
+return notConnected();case ActivityHealthConnectMissing() when healthConnectMissing != null:
+return healthConnectMissing();case ActivityLoading() when loading != null:
 return loading();case ActivityConnected() when connected != null:
 return connected(_that.metrics);case ActivityError() when error != null:
 return error(_that.message);case _:
@@ -149,10 +153,11 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  notConnected,required TResult Function()  loading,required TResult Function( List<DailyHealthMetric> metrics)  connected,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  notConnected,required TResult Function()  healthConnectMissing,required TResult Function()  loading,required TResult Function( List<DailyHealthMetric> metrics)  connected,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case ActivityNotConnected():
-return notConnected();case ActivityLoading():
+return notConnected();case ActivityHealthConnectMissing():
+return healthConnectMissing();case ActivityLoading():
 return loading();case ActivityConnected():
 return connected(_that.metrics);case ActivityError():
 return error(_that.message);}
@@ -169,10 +174,11 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  notConnected,TResult? Function()?  loading,TResult? Function( List<DailyHealthMetric> metrics)?  connected,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  notConnected,TResult? Function()?  healthConnectMissing,TResult? Function()?  loading,TResult? Function( List<DailyHealthMetric> metrics)?  connected,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case ActivityNotConnected() when notConnected != null:
-return notConnected();case ActivityLoading() when loading != null:
+return notConnected();case ActivityHealthConnectMissing() when healthConnectMissing != null:
+return healthConnectMissing();case ActivityLoading() when loading != null:
 return loading();case ActivityConnected() when connected != null:
 return connected(_that.metrics);case ActivityError() when error != null:
 return error(_that.message);case _:
@@ -207,6 +213,38 @@ int get hashCode => runtimeType.hashCode;
 @override
 String toString() {
   return 'ActivityState.notConnected()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class ActivityHealthConnectMissing implements ActivityState {
+  const ActivityHealthConnectMissing();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActivityHealthConnectMissing);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'ActivityState.healthConnectMissing()';
 }
 
 

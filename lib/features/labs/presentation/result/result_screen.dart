@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/models/urgency.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -9,7 +10,9 @@ import '../../../../core/widgets/normal_range_scale.dart';
 import '../../../../core/widgets/urgency_card.dart';
 import '../../data/models/lab_report.dart';
 import '../../data/models/lab_result.dart';
+import '../../../sharing/presentation/share_setup_screen.dart';
 import '../history/analyte_history_screen.dart';
+import 'lab_report_share_text.dart';
 
 const _urgencyTitles = {
   UrgencyLevel.calm: 'Всё в порядке',
@@ -43,10 +46,7 @@ class ResultScreen extends StatelessWidget {
             ],
           ],
           const SizedBox(height: AppSpacing.lg),
-          for (final result in report.results) ...[
-            _AnalyteCard(result: result),
-            const SizedBox(height: AppSpacing.md),
-          ],
+          for (final result in report.results) ...[_AnalyteCard(result: result), const SizedBox(height: AppSpacing.md)],
           const SizedBox(height: AppSpacing.md),
           Text(
             'nabzAI не ставит диагноз — это подсказки для вас. Решение всегда принимает врач.',
@@ -54,9 +54,51 @@ class ResultScreen extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.lg),
-          AppButton(label: 'Поделиться с врачом', icon: Icons.ios_share_rounded, onPressed: () {}),
+          AppButton(
+            label: 'Поделиться с врачом',
+            icon: Icons.ios_share_rounded,
+            onPressed: () => _showShareOptions(context, _urgencyTitles[level]),
+          ),
         ],
       ),
+    );
+  }
+
+  void _showShareOptions(BuildContext context, String? urgencyTitle) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder:
+          (sheetContext) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.chat_rounded),
+                  title: const Text('Отправить в мессенджер'),
+                  subtitle: const Text('WhatsApp, Telegram и др. — результаты придут текстом'),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    SharePlus.instance.share(
+                      ShareParams(
+                        text: buildLabReportShareText(report, urgencyTitle: urgencyTitle),
+                        subject: 'Результаты анализа',
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.qr_code_rounded),
+                  title: const Text('Ссылка или QR-код'),
+                  subtitle: const Text('Доступ к анализам и профилю на 1 или 7 дней'),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShareSetupScreen()));
+                  },
+                ),
+              ],
+            ),
+          ),
     );
   }
 }
@@ -87,9 +129,14 @@ class _AnalyteCard extends StatelessWidget {
     }
 
     return AppCard(
-      onTap: code == null ? null : () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => AnalyteHistoryScreen(code: code, title: result.displayName(isTajik: false))),
-          ),
+      onTap:
+          code == null
+              ? null
+              : () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => AnalyteHistoryScreen(code: code, title: result.displayName(isTajik: false)),
+                ),
+              ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -102,10 +149,7 @@ class _AnalyteCard extends StatelessWidget {
               ),
             ],
           ),
-          if (scale != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            scale,
-          ],
+          if (scale != null) ...[const SizedBox(height: AppSpacing.md), scale],
         ],
       ),
     );
@@ -113,9 +157,9 @@ class _AnalyteCard extends StatelessWidget {
 }
 
 QualitativeFlag _toQualitativeFlag(ResultFlag flag) => switch (flag) {
-      ResultFlag.low => QualitativeFlag.low,
-      ResultFlag.normal => QualitativeFlag.normal,
-      ResultFlag.high => QualitativeFlag.high,
-      ResultFlag.criticalLow => QualitativeFlag.criticalLow,
-      ResultFlag.criticalHigh => QualitativeFlag.criticalHigh,
-    };
+  ResultFlag.low => QualitativeFlag.low,
+  ResultFlag.normal => QualitativeFlag.normal,
+  ResultFlag.high => QualitativeFlag.high,
+  ResultFlag.criticalLow => QualitativeFlag.criticalLow,
+  ResultFlag.criticalHigh => QualitativeFlag.criticalHigh,
+};

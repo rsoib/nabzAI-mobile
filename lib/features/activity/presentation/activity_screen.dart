@@ -49,10 +49,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
           builder: (context, state) {
             return switch (state) {
               ActivityNotConnected() => _ConnectPrompt(onConnect: _cubit.connect),
+              ActivityHealthConnectMissing() => _InstallHealthConnect(
+                onInstall: _cubit.installHealthConnect,
+                onRetry: _cubit.connect,
+              ),
               ActivityLoading() => const Center(child: CircularProgressIndicator()),
               ActivityError(:final message) => _ConnectPrompt(onConnect: _cubit.connect, error: message),
-              ActivityConnected(:final metrics) =>
-                metrics.isEmpty ? const _NoDataYet() : _ActivityCharts(metrics: metrics),
+              ActivityConnected(:final metrics) => RefreshIndicator(
+                onRefresh: _cubit.refresh,
+                child: metrics.isEmpty ? const _NoDataYet() : _ActivityCharts(metrics: metrics),
+              ),
             };
           },
         ),
@@ -96,15 +102,60 @@ class _ConnectPrompt extends StatelessWidget {
   }
 }
 
+class _InstallHealthConnect extends StatelessWidget {
+  const _InstallHealthConnect({required this.onInstall, required this.onRetry});
+
+  final Future<void> Function() onInstall;
+  final Future<bool> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.download_rounded, size: 56, color: colors.brand),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Нужно приложение Health Connect', style: AppTypography.title, textAlign: TextAlign.center),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Шаги и пульс на телефоне хранятся в Health Connect от Google. Установите его из Play Маркета и вернитесь сюда.',
+            style: AppTypography.body.copyWith(color: colors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(label: 'Установить Health Connect', onPressed: onInstall),
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(label: 'Я установил', variant: AppButtonVariant.secondary, onPressed: onRetry),
+        ],
+      ),
+    );
+  }
+}
+
 class _NoDataYet extends StatelessWidget {
   const _NoDataYet();
 
   @override
   Widget build(BuildContext context) {
-    return const AppEmptyState(
-      title: 'Пока нет данных',
-      message: 'Как только часы или браслет запишут шаги или пульс, они появятся здесь.',
-      icon: Icons.favorite_border_rounded,
+    // Scrollable so pull-to-refresh works on the empty state too.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: constraints.maxHeight,
+          child: const AppEmptyState(
+            title: 'Пока нет данных',
+            message:
+                'На Android 14 и новее телефон сам считает шаги — они появятся здесь в течение дня. '
+                'Пульс приходит с часов или браслета через Samsung Health, Mi Fitness и др. '
+                'Потяните вниз, чтобы обновить.',
+            icon: Icons.favorite_border_rounded,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -121,19 +172,34 @@ class _ActivityCharts extends StatelessWidget {
     final last7 = sorted.length > 7 ? sorted.sublist(sorted.length - 7) : sorted;
 
     final totalSteps = sorted.fold<int>(0, (sum, m) => sum + (m.steps ?? 0));
+    final restingValues = sorted.map((m) => m.restingHr).whereType<int>().toList();
     final avgHrValues = sorted.map((m) => m.avgHr).whereType<int>().toList();
-    final avgHr = avgHrValues.isEmpty ? null : (avgHrValues.reduce((a, b) => a + b) / avgHrValues.length).round();
+    final pulseValues = restingValues.isNotEmpty ? restingValues : avgHrValues;
+    final pulse = pulseValues.isEmpty ? null : (pulseValues.reduce((a, b) => a + b) / pulseValues.length).round();
 
     return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
         Row(
           children: [
             Expanded(child: _StatCard(label: 'Шаги за месяц', value: '$totalSteps')),
             const SizedBox(width: AppSpacing.md),
-            Expanded(child: _StatCard(label: 'Средний пульс', value: avgHr == null ? '—' : '$avgHr уд/мин')),
+            Expanded(
+              child: _StatCard(
+                label: restingValues.isNotEmpty ? 'Пульс в покое' : 'Средний пульс',
+                value: pulse == null ? '—' : '$pulse уд/мин',
+              ),
+            ),
           ],
         ),
+        if (pulse == null) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Пульса пока нет — он приходит с часов или браслета.',
+            style: AppTypography.caption.copyWith(color: colors.textSecondary),
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
         Text('Шаги за неделю', style: AppTypography.title),
         const SizedBox(height: AppSpacing.md),

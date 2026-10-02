@@ -19,31 +19,33 @@ class SplashScreen extends StatelessWidget {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onContinue,
-          child: Column(
-            children: [
-              const Spacer(flex: 3),
-              ShaderMask(
-                shaderCallback: (bounds) =>
-                    LinearGradient(colors: [colors.brand, colors.brandDeep]).createShader(bounds),
-                child: Text(
-                  'nabzAI',
-                  style: AppTypography.display.copyWith(color: Colors.white, fontSize: 48),
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Spacer(flex: 3),
+                ShaderMask(
+                  shaderCallback:
+                      (bounds) => LinearGradient(colors: [colors.brand, colors.brandDeep]).createShader(bounds),
+                  child: Text('nabzAI', style: AppTypography.display.copyWith(color: Colors.white, fontSize: 48)),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Понятный помощник для здоровья',
-                style: AppTypography.body.copyWith(color: colors.textSecondary),
-              ),
-              const Spacer(flex: 4),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Text(
-                  'Нажмите, чтобы продолжить',
-                  style: AppTypography.caption.copyWith(color: colors.textSecondary),
+                const SizedBox(height: 12),
+                Text(
+                  'Понятный помощник для здоровья',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.body.copyWith(color: colors.textSecondary),
                 ),
-              ),
-            ],
+                const Spacer(flex: 4),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: Text(
+                    'Нажмите, чтобы продолжить',
+                    style: AppTypography.caption.copyWith(color: colors.textSecondary),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

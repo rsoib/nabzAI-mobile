@@ -1,13 +1,12 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'app_config.dart';
 
-/// Local backend, run via `nest start api` on port 3001 (see
-/// /Users/artem/projects/nabzAI/backend). Android emulators can't reach the
-/// host machine via "localhost" — they need the special alias 10.0.2.2.
+/// Local backend, run via `nest start api` on port 3000 (see
+/// /Users/artem/projects/nabzAI/backend). On Android (USB phone or emulator)
+/// "localhost" is the device itself — forward the port to the host first:
+/// `adb reverse tcp:3000 tcp:3000`.
 AppConfig buildDevConfig() {
-  final host = kIsWeb || !Platform.isAndroid ? 'localhost' : '10.0.2.2';
-  final baseUrl = 'http://$host:3001';
+  const host = 'localhost';
+  final baseUrl = 'http://$host:3000';
   return AppConfig(
     flavor: Flavor.dev,
     apiBaseUrl: baseUrl,
